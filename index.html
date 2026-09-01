@@ -32,6 +32,7 @@
   .nav-links { display: flex; gap: 2.5rem; list-style: none; }
   .nav-links a { font-family: 'Jost', sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--gold); }
 
   #hero {
     min-height: 100vh; display: flex; flex-direction: column;
@@ -274,6 +275,58 @@
 <footer>
   &copy; 2026 Five Suns Global &nbsp;&middot;&nbsp; adam@fivesuns.global &nbsp;&middot;&nbsp; Contact form submissions are used solely to respond to your inquiry and are never shared.
 </footer>
+
+<script>
+  (() => {
+    const nav = document.querySelector('nav');
+    const links = [...document.querySelectorAll('.nav-links a[href^="#"]')];
+    const sections = links
+      .map(link => document.querySelector(link.getAttribute('href')))
+      .filter(Boolean);
+
+    let ticking = false;
+
+    const updateActiveLink = () => {
+      const activationLine = nav.offsetHeight + (window.innerHeight * 0.3);
+      let activeSection = null;
+
+      sections.forEach(section => {
+        if (section.getBoundingClientRect().top <= activationLine) {
+          activeSection = section;
+        }
+      });
+
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        activeSection = sections[sections.length - 1];
+      }
+
+      links.forEach(link => {
+        const isActive = activeSection && link.getAttribute('href') === `#${activeSection.id}`;
+        link.classList.toggle('active', Boolean(isActive));
+
+        if (isActive) {
+          link.setAttribute('aria-current', 'location');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      });
+
+      ticking = false;
+    };
+
+    const requestUpdate = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateActiveLink);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('load', requestUpdate);
+    requestUpdate();
+  })();
+</script>
 
 </body>
 </html>
